@@ -1,0 +1,24 @@
+{
+  "name": "discord-music-bot",
+  "version": "1.0.0",
+  "description": "This is a Music bot for discord",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xLaoztu/Discord-Music-Bot.git"
+  },
+  "author": "Derek G",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xLaoztu/Discord-Music-Bot/issues"
+  },
+  "homepage": "https://github.com/xLaoztu/Discord-Music-Bot#readme",
+  "dependencies": {
+    "@discordjs/opus": "^0.3.3",
+    "discord.js": "^12.4.1",
+    "shelljs": "^0.8.4"
+  }
+}
