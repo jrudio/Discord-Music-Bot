@@ -2,11 +2,46 @@ const shelljs = require('shelljs');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const secretPath = './shh';
+const dummyPath = 'Mad Caddies - She [Green Day] (Official Audio) (128 kbps).mp3';
 
 let myDiscordID = null;
 
+class Bot {
+    constructor () {
+        this.connection = null;
+
+        return this;
+    }
+    
+    leaveChannel () {
+        this.connection && this.connection.disconnect();
+    }
+
+    async play (msgObject, args) {
+        if (msgObject.member.voice.channel) {
+            const connection = await msgObject.member.voice.channel.join();
+            
+            const dispatcher = connection.play(dummyPath);
+
+            dispatcher.setVolume(0.5); // half the volume
+
+            dispatcher.on('finish', () => {
+                console.log('Finished playing!');
+
+                // this.leaveChannel();
+            });
+
+            dispatcher.destroy();
+        } else {
+            msgObject.reply('You need to join a voice channel first!');
+        }
+    }
+}
+
+const bot = new Bot();
+
 const hotKeys = {
-    '#play': () => {}, 
+    '#play': bot.play, 
     '#skip': () => {},
     '#search': () => {},
     '#queue': () => {}, 
@@ -56,12 +91,13 @@ client.on('ready' , () => {
 client.on('message', msg => {
     const parsedHotKey = parseHotKey(msg.content);
 
-    if (isBot(msg.author.id)) {
+    if (!msg.guild || isBot(msg.author.id)) {
         return;
     }
 
     if (parsedHotKey.command !== null) {
-        msg.reply(parsedHotKey.command);
+        // msg.reply(parsedHotKey.command);
+        bot.play(msg, parsedHotKey.arguments);
     }
 });
 
