@@ -13,12 +13,12 @@ class Bot {
 
         return this;
     }
-    
+
     async leaveChannel () {
         if (this.dispatcher) {
             this.dispatcher = null;
         }
-        
+
         this.connection && this.connection.disconnect();
     }
 
@@ -37,7 +37,7 @@ class Bot {
             'youtube',
             'youtu.be',
         ];
-        
+
         whitelist.forEach((word) => {
             if (url.indexOf(word)) {
                 isYoutube = true;
@@ -70,7 +70,7 @@ class Bot {
             opusEncoded: false,
             fmt: 'mp3'
         });
-        
+
         this.dispatcher = this.connection.play(stream, { type: 'unknown' });
 
         this.dispatcher.on('finish', () => {
@@ -78,7 +78,7 @@ class Bot {
 
             // this.leaveChannel();
         });
-        
+
         this.dispatcher.setVolume(0.095);
     }
 }
@@ -86,14 +86,14 @@ class Bot {
 const bot = new Bot();
 
 const hotKeys = {
-    '#play': bot.play, 
+    '#play': bot.play,
     '#skip': () => {},
     '#search': () => {},
-    '#queue': () => {}, 
-    '#stop': () => {}, 
+    '#queue': () => {},
+    '#stop': () => {},
     '#pause': () => {},
     '#current': () => {},
-    '#seek': () => {},   
+    '#seek': () => {},
 };
 
 function readShh (fileName) {
@@ -130,6 +130,11 @@ function isBot (userID) {
 }
 
 const token = readShh(secretPath);
+
+if (!token) {
+    console.log('ERROR [TOKEN REQUIRED] - A Discord token is required to run this program');
+    process.exit(1);
+}
 
 client.on('ready' , () => {
     console.log('You are logged in');
