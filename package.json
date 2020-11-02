@@ -18,7 +18,9 @@
   "homepage": "https://github.com/xLaoztu/Discord-Music-Bot#readme",
   "dependencies": {
     "@discordjs/opus": "^0.3.3",
+    "discord-ytdl-core": "^4.1.3",
     "discord.js": "^12.4.1",
+    "ffmpeg-static": "^4.2.7",
     "shelljs": "^0.8.4"
   }
 }

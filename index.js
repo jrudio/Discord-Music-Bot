@@ -1,40 +1,85 @@
 const shelljs = require('shelljs');
+const ytdl = require('discord-ytdl-core');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const secretPath = './shh';
-const dummyPath = 'Mad Caddies - She [Green Day] (Official Audio) (128 kbps).mp3';
 
 let myDiscordID = null;
 
 class Bot {
     constructor () {
         this.connection = null;
+        this.dispatcher = null;
 
         return this;
     }
     
-    leaveChannel () {
+    async leaveChannel () {
+        if (this.dispatcher) {
+            this.dispatcher = null;
+        }
+        
         this.connection && this.connection.disconnect();
     }
 
-    async play (msgObject, args) {
-        if (msgObject.member.voice.channel) {
-            const connection = await msgObject.member.voice.channel.join();
-            
-            const dispatcher = connection.play(dummyPath);
+    async joinChannel(msgObject, cb) {
+        this.connection = await msgObject.member.voice.channel.join();
 
-            dispatcher.setVolume(0.5); // half the volume
-
-            dispatcher.on('finish', () => {
-                console.log('Finished playing!');
-
-                // this.leaveChannel();
-            });
-
-            dispatcher.destroy();
-        } else {
-            msgObject.reply('You need to join a voice channel first!');
+        if (cb) {
+            cb();
         }
+    }
+
+    isYoutubeLink (url) {
+        let isYoutube = false;
+
+        const whitelist = [
+            'youtube',
+            'youtu.be',
+        ];
+        
+        whitelist.forEach((word) => {
+            if (url.indexOf(word)) {
+                isYoutube = true;
+            }
+        })
+
+        return isYoutube;
+    }
+
+    async play (msgObject, args) {
+        let youtubeLink = undefined;
+
+        if (!this.connection) {
+            console.log('we are not in a voice channel!');
+            return;
+        }
+
+        // handle links
+        if (this.isYoutubeLink(args[0])) {
+            youtubeLink = args[0];
+            console.log(`playing youtube link: ${youtubeLink}`);
+        } else {
+            // handle search query
+            console.log('cannot handle youtube search query yet');
+            return;
+        }
+
+        let stream = ytdl(youtubeLink, {
+            filter: 'audioonly',
+            opusEncoded: false,
+            fmt: 'mp3'
+        });
+        
+        this.dispatcher = this.connection.play(stream, { type: 'unknown' });
+
+        this.dispatcher.on('finish', () => {
+            console.log('Finished playing!');
+
+            // this.leaveChannel();
+        });
+        
+        this.dispatcher.setVolume(0.095);
     }
 }
 
@@ -69,7 +114,11 @@ function parseHotKey (msg) {
         if (msg.indexOf(keyword) > -1) {
             parsedHotKey.command = keyword;
 
-            parsedHotKey.arguments = msg.split(' ').splice(0, 1);
+            msg = msg.split(' ');
+            if (msg.length > 0) {
+                msg = msg.splice(1, 1);
+                parsedHotKey.arguments = msg;
+            }
         }
     }
 
@@ -96,8 +145,17 @@ client.on('message', msg => {
     }
 
     if (parsedHotKey.command !== null) {
-        // msg.reply(parsedHotKey.command);
-        bot.play(msg, parsedHotKey.arguments);
+        if (msg.member.voice.channel) {
+            // msg.reply(parsedHotKey.command);
+            // const cb = () => {
+
+            // };
+            bot.joinChannel(msg, () => {
+                bot.play(msg, parsedHotKey.arguments);
+            });
+        } else {
+            msg.reply('You need to join a voice channel first!');
+        }
     }
 });
 
